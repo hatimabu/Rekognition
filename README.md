@@ -1,6 +1,13 @@
 
+This project analyzes images uploaded to S3 with Amazon Rekognition, and if faces are detected, records the results in DynamoDB and notifies users via SNS.
+ 
+ ---
+
 ![alt text](image.png)
 source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
+
+---
+
 # Services:
 
 - Amazon S3
@@ -20,6 +27,7 @@ source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
 + The bucket is configured with event notifications so that whenever a new image is uploaded, it automatically triggers the AWS Lambda function.
 
 ### 💰 pricing
+
 ---
 
 ## Processing (Lambda + Rekognition)
