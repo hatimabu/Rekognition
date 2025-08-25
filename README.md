@@ -30,7 +30,7 @@ US East (N.Virginia)
 
 + The bucket is configured with event notifications so that whenever a new image is uploaded, it automatically triggers the AWS Lambda function.
 
-### 💰 *pricing*
+### 💰 *S3 pricing*
 S3 Standard - General purpose storage for any type of data, typically used for frequently accessed data	
 First 50 TB / Month	$0.023 per GB
 
@@ -122,7 +122,7 @@ exports.handler = async (event) => {
 };
 ```
 
-### 💰 *pricing*
+### 💰 *lambda pricing*
  The Lambda free tier includes 1M free requests per month and 400,000 GB-seconds of compute time per month.
 
 + Inside the Lambda function, you call Amazon Rekognition.
