@@ -16,6 +16,10 @@ source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
 - Amazon DynamoDB
 - Amazon SNS
 
+# zone 
+
+US East (N.Virginia)
+
 ---
 
 # Architecture Workflow
@@ -31,14 +35,21 @@ S3 Standard - General purpose storage for any type of data, typically used for f
 First 50 TB / Month	$0.023 per GB
 
 ##### Requests & data retrievals 
-- PUT, COPY, POST, LIST requests 	GET, SELECT, and all other $0.005/per 1,000 requests
+- PUT, COPY, POST, LIST requests $0.005/per 1,000 requests
 - GET, SELECT, and all other request $0.0004/per 1,000 requests
+
+ - Storage: ~4.883 GB × $0.023 ≈ $0.1123
+ - Requests: $0.0027
+ - Total ≈ $0.1150 / month
 
 ---
 
-## Processing (Lambda + Rekognition)
+## 🧮 Processing (Lambda + Rekognition)
 
 + Lambda function is invoked when the new object (image) is created in S3.
+
+### 💰 *pricing*
+ The Lambda free tier includes 1M free requests per month and 400,000 GB-seconds of compute time per month.
 
 + Inside the Lambda function, you call Amazon Rekognition.
 
