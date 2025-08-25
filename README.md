@@ -37,10 +37,10 @@ First 50 TB / Month	$0.023 per GB
 ##### Requests & data retrievals 
 - PUT, COPY, POST, LIST requests $0.005/per 1,000 requests
 - GET, SELECT, and all other request $0.0004/per 1,000 requests
-
- - Storage: ~4.883 GB × $0.023 ≈ $0.1123
- - Requests: $0.0027
- - Total ≈ $0.1150 / month
+###### TOTAL
+ Storage: ~4.883 GB × $0.023 ≈ $0.1123
+ Requests: $0.0027
+ Total ≈ $0.1150 / month
 
 ---
 
