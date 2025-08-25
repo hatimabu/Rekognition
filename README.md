@@ -56,6 +56,71 @@ Total = $0.081 ≈ $0.08 per month
 
 + Lambda function is invoked when the new object (image) is created in S3.
 
+```hcl
+const AWS = require("aws-sdk");
+
+// Initialize AWS clients
+const rekognition = new AWS.Rekognition();
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
+
+exports.handler = async (event) => {
+    try {
+        // 1️⃣ Get S3 info from event (triggered when file uploaded to S3)
+        const bucket = event.Records[0].s3.bucket.name;
+        const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
+
+        console.log(`New image uploaded: ${bucket}/${key}`);
+
+        // 2️⃣ Call Rekognition to analyze the image
+        const rekogParams = {
+            Image: {
+                S3Object: {
+                    Bucket: bucket,
+                    Name: key
+                }
+            },
+            Attributes: ["ALL"]  // detect emotions, age, gender, etc.
+        };
+
+        const rekogResult = await rekognition.detectFaces(rekogParams).promise();
+
+        console.log("Rekognition result:", JSON.stringify(rekogResult, null, 2));
+
+        // 3️⃣ Extract some useful data (example: face count + top emotion)
+        const faceDetails = rekogResult.FaceDetails || [];
+        const faceCount = faceDetails.length;
+        let topEmotion = "NONE";
+
+        if (faceCount > 0 && faceDetails[0].Emotions.length > 0) {
+            // Pick the most confident emotion
+            topEmotion = faceDetails[0].Emotions.reduce((prev, curr) =>
+                prev.Confidence > curr.Confidence ? prev : curr
+            ).Type;
+        }
+
+        // 4️⃣ Save results to DynamoDB
+        const dbParams = {
+            TableName: "ImageAnalysis",
+            Item: {
+                ImageId: `${bucket}/${key}`,
+                Timestamp: new Date().toISOString(),
+                FaceCount: faceCount,
+                TopEmotion: topEmotion,
+                RawData: rekogResult   // optional: store full JSON response
+            }
+        };
+
+        await dynamoDB.put(dbParams).promise();
+        console.log(`Saved analysis for ${key} to DynamoDB`);
+
+        return { statusCode: 200, body: "Success" };
+
+    } catch (err) {
+        console.error("Error processing image:", err);
+        throw err;
+    }
+};
+
 ### 💰 *pricing*
  The Lambda free tier includes 1M free requests per month and 400,000 GB-seconds of compute time per month.
 
