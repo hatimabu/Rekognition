@@ -27,6 +27,12 @@ source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
 + The bucket is configured with event notifications so that whenever a new image is uploaded, it automatically triggers the AWS Lambda function.
 
 ### 💰 *pricing*
+S3 Standard - General purpose storage for any type of data, typically used for frequently accessed data	
+First 50 TB / Month	$0.023 per GB
+
++ Requests & data retrievals 
+- PUT, COPY, POST, LIST requests 	GET, SELECT, and all other $0.005/per 1,000 requests
+- GET, SELECT, and all other request $0.0004/per 1,000 requests
 
 ---
 
