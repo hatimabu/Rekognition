@@ -38,9 +38,17 @@ First 50 TB / Month	$0.023 per GB
 - PUT, COPY, POST, LIST requests $0.005/per 1,000 requests
 - GET, SELECT, and all other request $0.0004/per 1,000 requests
 ###### TOTAL
- Storage: ~4.883 GB × $0.023 ≈ $0.1123
- Requests: $0.0027
- Total ≈ $0.1150 / month
+- 1️⃣ S3 Storage
+
+15,000 images × 0.5 MB = 7,500 MB = 7.5 GB stored per month.
+Pricing (S3 Standard): $0.023 per GB
+Cost: 7.5 × $0.023 = $0.1725 ≈ $0.18 per month
+
+- 2️⃣ S3 Requests
+
+PUT (uploads) = 15,000 / 1,000 × $0.005 = $0.075
+GET (retrieval by Rekognition) = 15,000 / 1,000 × $0.0004 = $0.006
+Total = $0.081 ≈ $0.08 per month
 
 ---
 
