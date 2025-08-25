@@ -120,6 +120,7 @@ exports.handler = async (event) => {
         throw err;
     }
 };
+```
 
 ### 💰 *pricing*
  The Lambda free tier includes 1M free requests per month and 400,000 GB-seconds of compute time per month.
