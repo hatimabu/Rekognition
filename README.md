@@ -30,7 +30,7 @@ source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
 S3 Standard - General purpose storage for any type of data, typically used for frequently accessed data	
 First 50 TB / Month	$0.023 per GB
 
-+ Requests & data retrievals 
+##### Requests & data retrievals 
 - PUT, COPY, POST, LIST requests 	GET, SELECT, and all other $0.005/per 1,000 requests
 - GET, SELECT, and all other request $0.0004/per 1,000 requests
 
