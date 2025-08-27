@@ -129,6 +129,11 @@ exports.handler = async (event) => {
 
 + Rekognition analyzes the uploaded image and checks whether it contains faces.
 
+### 💰 *Rekognition pricing*
+Group 1 AssociateFaces First 1 million images $0.001
+- workload: 500/day × 30 days = 15,000 images/month.
+- 15,000 × $0.001 = $15.00/month (ignoring any free-tier credits).
+
 ---
 
 ## Decision Making
@@ -139,7 +144,15 @@ exports.handler = async (event) => {
 
  + The Lambda function writes the metadata (image name, S3 path, number of faces, confidence score, etc.) into a DynamoDB table.
  + The Lambda function also triggers Amazon SNS (Simple Notification Service) to send an email notification (or SMS/push, depending on configuration).
-
+ 
+### 💰 *DynamoDB pricing* 
+DynamoDB Standard table class > On-Demand Throughput Type
+DynamoDB Monthly Cost Estimate
+500 uploads/day × 30 days = 15,000 writes/month
+- Writes = ~$0.02
+- Reads = ~$0.003 (depends on usage)
+- Storage = ~$0.004
+- Total ≈ $0.03/month
 ---
 
 ## Notification
@@ -149,3 +162,11 @@ exports.handler = async (event) => {
 For example, if you configured email, the subscriber receives an email saying something like:
 
 "A face has been detected in the uploaded image: [filename]."
+
+### 💰 *sns pricing*
+--- 
+![alt text](image-1.png)
+--- 
+$2 per 100,000 emails → your 15,000/month is only $0.30/month.
+
+# TOTAL PROJECT WILL COST AROUND 15.30$
