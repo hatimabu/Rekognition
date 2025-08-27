@@ -169,4 +169,4 @@ For example, if you configured email, the subscriber receives an email saying so
 --- 
 $2 per 100,000 emails → your 15,000/month is only $0.30/month.
 
-# TOTAL PROJECT WILL COST AROUND 15.30$
+# TOTAL PROJECT WILL COST AROUND $15.56 per month
