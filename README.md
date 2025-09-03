@@ -51,7 +51,7 @@ Total = $0.081 ≈ $0.08 per month
 
 ---
 
-## 🧮 Processing (Lambda + Rekognition)
+## 🧮 Processing (Lambda + Rekognition) 🔥
 
 + Lambda function is invoked when the new object (image) is created in S3.
 
@@ -169,3 +169,5 @@ For example, if you configured email, the subscriber receives an email saying so
 $2 per 100,000 emails → your 15,000/month is only $0.30/month.
 
 # TOTAL PROJECT WILL COST AROUND $15.56 per month
+
+### Monitoring
