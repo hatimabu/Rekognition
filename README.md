@@ -175,22 +175,8 @@ $2 per 100,000 emails → your 15,000/month is only $0.30/month.
 # 🔍 Monitoring 
 ## Amazon CloudWatch (Core Monitoring)
 
-### Lambda metrics:
-
-- Invocations (how many times your function ran — should match uploads).
-- Duration (processing time — spikes = performance issues)
-- Errors & Throttles (failed executions or concurrency limits).
-
-### S3 metrics:
-
-- NumberOfObjects and BucketSizeBytes (storage growth).
-- Request counts (PUT/GET).
-- DynamoDB metrics:
-
-ConsumedReadCapacityUnits & ConsumedWriteCapacityUnits (to check if you’re under/over provisioned).
-
-ThrottledRequests (bad if > 0).
-
-SNS metrics:
-
-NumberOfMessagesPublished, NumberOfNotificationsDelivered, NumberOfNotificationsFailed.
+Tracks metrics for:
+- Lambda: invocations, duration, errors
+- S3: object count, storage size
+- DynamoDB: read/write capacity, throttling
+- SNS: messages published/delivered/failed
