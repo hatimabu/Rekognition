@@ -1,13 +1,14 @@
 import boto3
 import json
 
-rekognition = boto3.client('rekognition', region_name='us-east-1')
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-sns = boto3.client('sns', region_name='us-east-1')
+# Set all services to the same region: us-east-2
+rekognition = boto3.client('rekognition', region_name='us-east-2')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+sns = boto3.client('sns', region_name='us-east-2')
 
-# Replace with your actual table name and SNS topic ARN
+# Your actual table name and SNS topic ARN
 DYNAMO_TABLE = 'FaceMetadata'
-SNS_TOPIC_ARN = 'arn:aws:sns: us-east-2:094092120892:FaceDetectedTopic'
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-2:094092120892:FaceDetectedTopic'
 
 def lambda_handler(event, context):
     # Extract bucket and image key from the S3 event
