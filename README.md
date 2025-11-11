@@ -150,15 +150,40 @@ Group 1 AssociateFaces First 1 million images $0.001
 
 ---
 
-## Decision Making
+## Decision Making & Notifications
 
-+ If no face is detected → nothing happens (or you can log it).
+The system sends SNS notifications for **ALL scenarios**:
 
-+ If a face is detected:
+### 1. No Face Detected
++ **Notification**: Sent immediately
++ **Subject**: "🚫 Face Recognition Alert - No Face Detected"
++ **Action**: Access denied, door remains locked
 
- + The Lambda function writes the metadata (image name, S3 path, number of faces, confidence score, etc.) into a DynamoDB table.
- + The Lambda function also triggers Amazon SNS (Simple Notification Service) to send an email notification (or SMS/push, depending on configuration).
- 
+### 2. Face Detected - Matched Employee
++ **Notification**: Sent with employee details
++ **Subject**: "✅ Face Recognition - Authorized Access"
++ **Action**: Door unlocked, employee authorized to enter
++ **Data Stored**: Employee ID, match confidence, face metadata
+
+### 3. Face Detected - Unmatched (Unknown Person)
++ **Notification**: Sent immediately (⚠️ **SECURITY ALERT**)
++ **Subject**: "🚫 Face Recognition - Unauthorized Access Attempt"
++ **Action**: Door remains locked, security notified
++ **Data Stored**: Face metadata for investigation
+
+### 4. Processing Error
++ **Notification**: Sent if any error occurs
++ **Subject**: "❌ Face Recognition - Processing Error"
++ **Action**: Requires manual investigation
+
+### DynamoDB Storage
++ The Lambda function writes metadata to DynamoDB for all processed images:
+  - Match status (MATCHED/UNMATCHED)
+  - Employee ID (if matched)
+  - Match confidence score
+  - Face attributes (age, gender, emotions)
+  - Processing timestamp
+
 ### 💰 *DynamoDB pricing* 
 DynamoDB Standard table class > On-Demand Throughput Type
 DynamoDB Monthly Cost Estimate
@@ -169,13 +194,44 @@ DynamoDB Monthly Cost Estimate
 - Total ≈ $0.03/month
 ---
 
-## Notification
+## Notification Examples
 
-+ SNS publishes the message to all subscribers.
+### Matched Employee (Authorized)
+```
+✅ AUTHORIZED ACCESS - Employee Recognized
 
-For example, if you configured email, the subscriber receives an email saying something like:
+Image: employee_photo.jpg
+Bucket: rekognition-upload-bucket1
+Employee ID: EMP001
+Match Confidence: 95.50%
+Status: MATCHED
 
-"A face has been detected in the uploaded image: [filename]."
+Action: Door should be UNLOCKED. Employee is authorized to enter.
+```
+
+### Unmatched Face (Unauthorized)
+```
+🚫 UNAUTHORIZED ACCESS - Unknown Person
+
+Image: unknown_person.jpg
+Bucket: rekognition-upload-bucket1
+Status: UNMATCHED
+Match Result: No matching employee found in database
+
+Action: Door should remain LOCKED. Unauthorized access attempt detected.
+Security should be notified immediately.
+```
+
+### No Face Detected
+```
+Image Processing Result
+
+Image: invalid_image.jpg
+Status: No face detected
+
+The uploaded image does not contain any detectable faces.
+Access should be denied.
+```
 
 ### 💰 *sns pricing*
 --- 
