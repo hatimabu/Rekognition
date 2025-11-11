@@ -17,7 +17,7 @@ source:https://tutorialsdojo.com/5-best-cloud-projects-for-beginners/
 
 # zone 
 
-US East (N.Virginia)
+US East (Ohio) - us-east-2
 
 ---
 

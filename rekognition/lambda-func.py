@@ -1,14 +1,16 @@
 import boto3
 import json
+import os
 from decimal import Decimal
 
 rekognition = boto3.client('rekognition', region_name='us-east-2')
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 sns = boto3.client('sns', region_name='us-east-2')
 
-DYNAMO_TABLE = 'FaceMetadata'
-SNS_TOPIC_ARN = 'arn:aws:sns:us-east-2:094092120892:FaceDetectedTopic'
-REKOGNITION_COLLECTION = 'employeeFaces'
+# Get configuration from environment variables (set during Lambda deployment)
+DYNAMO_TABLE = os.environ.get('DYNAMO_TABLE', 'FaceMetadata')
+SNS_TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN', 'arn:aws:sns:us-east-2:094092120892:FaceDetectedTopic')
+REKOGNITION_COLLECTION = os.environ.get('REKOGNITION_COLLECTION', 'employeeFaces')
 
 def lambda_handler(event, context):
     try:
