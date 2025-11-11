@@ -56,69 +56,84 @@ Total = $0.081 ≈ $0.08 per month
 + Lambda function is invoked when the new object (image) is created in S3.
 
 ```hcl
-const AWS = require("aws-sdk");
+import boto3
+import json
+from decimal import Decimal
 
-// Initialize AWS clients
-const rekognition = new AWS.Rekognition();
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+rekognition = boto3.client('rekognition', region_name='us-east-2')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+sns = boto3.client('sns', region_name='us-east-2')
 
-exports.handler = async (event) => {
-    try {
-        // 1️⃣ Get S3 info from event (triggered when file uploaded to S3)
-        const bucket = event.Records[0].s3.bucket.name;
-        const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
+DYNAMO_TABLE = 'FaceMetadata'
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-2:094092120892:FaceDetectedTopic'
+REKOGNITION_COLLECTION = 'employeeFaces'
 
-        console.log(`New image uploaded: ${bucket}/${key}`);
+def lambda_handler(event, context):
+    try:
+        record = event['Records'][0]
+        bucket = record['s3']['bucket']['name']
+        key = record['s3']['object']['key']
+        print(f"Processing image: {key} from bucket: {bucket}")
 
-        // 2️⃣ Call Rekognition to analyze the image
-        const rekogParams = {
-            Image: {
-                S3Object: {
-                    Bucket: bucket,
-                    Name: key
-                }
+        # Step 1: Detect faces
+        response = rekognition.detect_faces(
+            Image={'S3Object': {'Bucket': bucket, 'Name': key}},
+            Attributes=['ALL']
+        )
+
+        face_details = response.get('FaceDetails', [])
+        if not face_details:
+            print("No face detected.")
+            return {'statusCode': 200, 'body': 'No face detected.'}
+
+        face = face_details[0]
+        print("Face detected. Writing to DynamoDB...")
+
+        # Step 2: Write to DynamoDB
+        table = dynamodb.Table(DYNAMO_TABLE)
+        table.put_item(Item={
+            'FaceId': key,
+            'AgeRange': {
+                'Low': Decimal(str(face['AgeRange']['Low'])),
+                'High': Decimal(str(face['AgeRange']['High']))
             },
-            Attributes: ["ALL"]  // detect emotions, age, gender, etc.
-        };
+            'Gender': {
+                'Value': face['Gender']['Value'],
+                'Confidence': Decimal(str(face['Gender']['Confidence']))
+            },
+            'Emotions': [
+                {
+                    'Type': e['Type'],
+                    'Confidence': Decimal(str(e['Confidence']))
+                } for e in face['Emotions']
+            ]
+        })
 
-        const rekogResult = await rekognition.detectFaces(rekogParams).promise();
+        # Step 3: Search for face match
+        match_response = rekognition.search_faces_by_image(
+            CollectionId=REKOGNITION_COLLECTION,
+            Image={'S3Object': {'Bucket': bucket, 'Name': key}},
+            MaxFaces=1,
+            FaceMatchThreshold=90
+        )
 
-        console.log("Rekognition result:", JSON.stringify(rekogResult, null, 2));
+        matches = match_response.get('FaceMatches', [])
+        match_info = matches[0]['Face']['ExternalImageId'] if matches else 'No match found'
+        print(f"Match result: {match_info}")
 
-        // 3️⃣ Extract some useful data (example: face count + top emotion)
-        const faceDetails = rekogResult.FaceDetails || [];
-        const faceCount = faceDetails.length;
-        let topEmotion = "NONE";
+        # Step 4: Publish to SNS
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Message=f"Face detected in image: {key}\nMatch result: {match_info}",
+            Subject="Face Recognition Alert"
+        )
+        print("SNS notification sent.")
 
-        if (faceCount > 0 && faceDetails[0].Emotions.length > 0) {
-            // Pick the most confident emotion
-            topEmotion = faceDetails[0].Emotions.reduce((prev, curr) =>
-                prev.Confidence > curr.Confidence ? prev : curr
-            ).Type;
-        }
+        return {'statusCode': 200, 'body': f'Face processed. Match result: {match_info}'}
 
-        // 4️⃣ Save results to DynamoDB
-        const dbParams = {
-            TableName: "ImageAnalysis",
-            Item: {
-                ImageId: `${bucket}/${key}`,
-                Timestamp: new Date().toISOString(),
-                FaceCount: faceCount,
-                TopEmotion: topEmotion,
-                RawData: rekogResult   // optional: store full JSON response
-            }
-        };
-
-        await dynamoDB.put(dbParams).promise();
-        console.log(`Saved analysis for ${key} to DynamoDB`);
-
-        return { statusCode: 200, body: "Success" };
-
-    } catch (err) {
-        console.error("Error processing image:", err);
-        throw err;
-    }
-};
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return {'statusCode': 500, 'body': f'Error: {str(e)}'}
 ```
 
 ### 💰 *lambda pricing*
