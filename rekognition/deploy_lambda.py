@@ -1,11 +1,41 @@
 import boto3
 import zipfile
 import os
+from botocore.exceptions import ClientError
 
 lambda_client = boto3.client('lambda', region_name='us-east-2')
-role_arn = 'arn:aws:iam::094092120892:role/lambda-role-FaceProcessor'
+iam = boto3.client('iam')
+sts = boto3.client('sts')
+role_name = 'lambda-role-FaceProcessor'
+
+def get_role_arn():
+    """Get the IAM role ARN for Lambda function"""
+    try:
+        # Try to get the role
+        response = iam.get_role(RoleName=role_name)
+        return response['Role']['Arn']
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchEntity':
+            # Role doesn't exist, get account ID and construct ARN
+            try:
+                account_id = sts.get_caller_identity()['Account']
+                return f'arn:aws:iam::{account_id}:role/{role_name}'
+            except Exception:
+                # Fallback to default account ID
+                return f'arn:aws:iam::094092120892:role/{role_name}'
+        else:
+            # Other error, try to construct ARN
+            try:
+                account_id = sts.get_caller_identity()['Account']
+                return f'arn:aws:iam::{account_id}:role/{role_name}'
+            except Exception:
+                return f'arn:aws:iam::094092120892:role/{role_name}'
 
 def deploy_lambda():
+    # Get the role ARN
+    role_arn = get_role_arn()
+    print(f"Using IAM Role ARN: {role_arn}")
+    
     # Check if lambda-func.py exists
     lambda_file = 'lambda-func.py'
     if not os.path.exists(lambda_file):
@@ -61,6 +91,18 @@ def deploy_lambda():
                 }
             )
             print("Lambda function code and configuration updated successfully.")
+        except lambda_client.exceptions.InvalidParameterValueException as e:
+            error_msg = str(e)
+            if "cannot be assumed by Lambda" in error_msg or "The role defined for the function cannot be assumed" in error_msg:
+                print(f"\n❌ Error: IAM role cannot be assumed by Lambda.")
+                print(f"   Role ARN: {role_arn}")
+                print(f"\n💡 Solution: Create the IAM role first by running:")
+                print(f"   python create_iam_role.py")
+                print(f"\n   Or run the full pipeline:")
+                print(f"   python pipline.py")
+            else:
+                print(f"Error deploying Lambda function: {error_msg}")
+            return False
         except Exception as e:
             print(f"Error deploying Lambda function: {str(e)}")
             return False
